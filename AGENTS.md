@@ -12,6 +12,34 @@ To install dependencies:
 bundle install
 ```
 
+### Installing New Gems
+
+To add a new gem (plugin or dependency):
+
+1.  Add the gem to the `Gemfile`:
+    ```ruby
+    gem "gem-name", "~> x.x"
+    ```
+2.  Install the new gem:
+    ```bash
+    bundle install
+    ```
+3.  If it's a Jekyll plugin, also add it to `_config.yml` under `plugins:` if required.
+
+### Updating Gems
+
+To update all gems to their latest compatible versions:
+
+```bash
+bundle update
+```
+
+To update a specific gem:
+
+```bash
+bundle update gem-name
+```
+
 ## 2. Running Locally
 
 To start the local development server:
@@ -31,6 +59,29 @@ The site will be available at `http://localhost:4000/`.
 ## 3. Creating a New Post
 
 Posts are located in the `_posts/` directory.
+
+### Using Jekyll Compose (Recommended)
+
+This project uses `jekyll-compose` to streamline creating posts and drafts.
+
+**Create a new draft:**
+```bash
+bundle exec jekyll draft "My New Draft"
+```
+This creates a file in `_drafts/`.
+
+**Publish a draft:**
+```bash
+bundle exec jekyll publish _drafts/my-new-draft.md
+```
+This moves the draft to `_posts/` and updates the date.
+
+**Create a new post directly:**
+```bash
+bundle exec jekyll post "My New Post"
+```
+
+### Manual Creation
 
 ### File Naming Convention
 Files must be named in the following format:
