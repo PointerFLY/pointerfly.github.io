@@ -54,6 +54,12 @@ To include posts dated in the future:
 bundle exec jekyll serve --future
 ```
 
+To include drafts:
+
+```bash
+bundle exec jekyll serve --drafts
+```
+
 The site will be available at `http://localhost:4000/`.
 
 ## 3. Creating a New Post
