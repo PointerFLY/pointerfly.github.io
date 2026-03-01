@@ -1,8 +1,11 @@
 ---
 layout: post
-title: 'A Theory of LLM Agent Coding'
+title: Draft - A Theory of LLM Agent Coding
 mathjax: true
+date: 2026-03-01 21:25 +0800
 ---
+
+STILL in DRFAT with AI help.
 
 # Abstract
 
