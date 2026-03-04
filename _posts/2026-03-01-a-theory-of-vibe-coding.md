@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Draft - A Theory of LLM Agent Coding
+title: A Theory of Vibe Coding
 mathjax: true
 date: 2026-03-01 21:25 +0800
 ---
