@@ -25,9 +25,9 @@ By acknowledging this illusion, we can stop asking "why didn't the AI understand
 
 # The Basic: Autoregressive Token Generation
 
-At the foundational level, an LLM defines a conditional probability distribution over a vocabulary $V$. The generation of the output text is an autoregressive stochastic process, sampling from the following distribution iteratively until an End-of-Sequence (EOS) token is reached:
+At the foundational level, an LLM defines a conditional probability distribution over a vocabulary $\mathcal{V}$. The generation of the output text is an autoregressive stochastic process, sampling from the following distribution iteratively until an End-of-Sequence (EOS) token is reached:
 
-$$ P(w_{n+1} \mid w_1, \dots, w_n), \; w_{n+1} \in V $$
+$$ P(w_{n+1} \mid w_1, \dots, w_n), \; w_{n+1} \in \mathcal{V} $$
 
 Each generated token $w_{n+1}$ depends on the entire preceding sequence, making it a highly complex, non-Markovian process at the token level (though bounded by the context window).
 
@@ -37,9 +37,9 @@ In the early ChatGPT era, interactions were purely conversational without tool u
 
 Given the finite length of the input token stream due to the context window limit, we can simplify the generation into a conditional probability distribution over sequences. Let $S_t$ represent the entire context state at turn $t$ (including all previous conversation history). The transition to the next state $S_{t+1}$ (which includes the user's new prompt and the model's response) is given by:
 
-$$ P(S_{t+1} \mid S_t), \; S_{t+1} \in L $$
+$$ P(S_{t+1} \mid S_t), \; S_{t+1} \in \mathcal{S} $$
 
-where $L$ is the space of all valid token sequences within the context window. The model generates the response $Y_t$ autoregressively:
+where $\mathcal{S}$ is the space of all valid token sequences within the context window. The model generates the response $Y_t$ autoregressively:
 
 $$ P(Y_t \mid S_t) = \prod_{i=1}^{|Y_t|} P_\theta(y_{t,i} \mid S_t, y_{t,<i}) $$
 
@@ -95,17 +95,17 @@ It is vital to clarify that in standard Vibe Coding, the LLM's weights $\theta$ 
 
 Every iteration where the agent writes code, executes it, and receives an error message can be viewed as a Bayesian update.
 
-Let $C$ be the space of all possible code implementations. Initially, the LLM has a prior distribution $P(C \mid S_0)$ based solely on the prompt and its pre-training.
+Let $\mathcal{C}$ be the space of all possible code implementations. Initially, the LLM has a prior distribution $P(\mathcal{C} \mid S_0)$ based solely on the prompt and its pre-training.
 
-When the agent executes the code action $A_t$, it receives an observation $O_t$ (e.g., a stack trace or a failed unit test). The likelihood of observing this specific output given a code implementation is $P(O_t \mid C)$.
+When the agent executes the code action $A_t$, it receives an observation $O_t$ (e.g., a stack trace or a failed unit test). The likelihood of observing this specific output given a code implementation is $P(O_t \mid \mathcal{C})$.
 
 The agent updates its belief over the correct code using Bayes' Theorem:
 
-$$ P(C \mid S_t, O_t) \propto P(O_t \mid C) P(C \mid S_t) $$
+$$ P(\mathcal{C} \mid S_t, O_t) \propto P(O_t \mid \mathcal{C}) P(\mathcal{C} \mid S_t) $$
 
-- **Prior**: The agent's current distribution over the correct implementation, $P(C \mid S_t)$.
+- **Prior**: The agent's current distribution over the correct implementation, $P(\mathcal{C} \mid S_t)$.
 - **Observation**: The execution output $O_t$.
-- **Posterior**: The updated distribution over possible correct codes, $P(C \mid S_{t+1})$. By feeding the observation back into the context window, the agent conditions its next sample on the fact that its previous hypothesis was incorrect. The observation $O_t$ acts as evidence, collapsing the probability mass around hypotheses that are consistent with resolving the error. This iteratively reduces the entropy $H(C)$ of the solution space.
+- **Posterior**: The updated distribution over possible correct codes, $P(\mathcal{C} \mid S_{t+1})$. By feeding the observation back into the context window, the agent conditions its next sample on the fact that its previous hypothesis was incorrect. The observation $O_t$ acts as evidence, collapsing the probability mass around hypotheses that are consistent with resolving the error. This iteratively reduces the entropy $H(\mathcal{C})$ of the solution space.
 
 # Convergence
 
@@ -116,7 +116,7 @@ Practically, convergence means the code meets a predefined termination criteria:
 1. **Functional Completeness**: All unit, integration, and e2e tests pass (the environment returns a success signal).
 2. **Human Approval**: The code passes visual and architectural inspection by a human developer.
 
-It is crucial to note that for any set of functional requirements, there are theoretically infinitely many valid code implementations $C_{valid} \subset C$ that satisfy the automated test suite. A naive MDP process might converge to any random absorbing state within $C_{valid}$. However, a well-steered MDP process aims to converge the end state strictly into a much smaller, optimal subset $C_{optimal} \subset C_{valid}$. This subset represents implementations that yield a high Value function from a software engineering perspective—characterized by low structural entropy, high maintainability, and scalability.
+It is crucial to note that for any set of functional requirements, there are theoretically infinitely many valid code implementations $\mathcal{C}_{valid} \subset \mathcal{C}$ that satisfy the automated test suite. A naive MDP process might converge to any random absorbing state within $\mathcal{C}_{valid}$. However, a well-steered MDP process aims to converge the end state strictly into a much smaller, optimal subset $\mathcal{C}_{optimal} \subset \mathcal{C}_{valid}$. This subset represents implementations that yield a high Value function from a software engineering perspective—characterized by low structural entropy, high maintainability, and scalability.
 
 The efficiency of vibe coding is measured by the **expected hitting time** $\mathbb{E}[T_{S^\ast}]$, which is the expected number of iterations (tool calls and generations) required to reach the absorbing state $S^\ast$. A lower hitting time implies a faster and more efficient agent loop.
 
