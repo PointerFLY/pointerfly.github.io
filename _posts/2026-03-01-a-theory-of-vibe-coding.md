@@ -44,7 +44,7 @@ $$ P(Y_t \mid S_t) = \prod_{i=1}^{|Y_t|} P_\theta(y_{t,i} \mid S_t, y_{t,<i}) $$
 
 This process is a straightforward sequence-to-sequence mapping, heavily reliant on the internal weights $\theta$ to hallucinate or recall correct information.
 
-# Agent: Interaction out of LLM
+# Agent: Interaction Beyond the LLM
 
 Agents complicate the base process by extending the capabilities of the LLM through the introduction of external tools. A tool can be modeled as a deterministic or stochastic function $T: \mathcal{X} \to \mathcal{Y}$ that accepts a string $x$ and generates a new string $y$:
 
@@ -100,7 +100,7 @@ $$ P(C \mid S_t, O_t) \propto P(O_t \mid C) P(C \mid S_t) $$
 
 # Convergence
 
-In the context of Vibe Coding, convergence is defined as the agent reaching an **absorbing state** $S^*$ where the task is complete. Mathematically, an absorbing state is one where the transition probability to any other state is zero: $P(S^* \mid S^*, A) = 1$, and the agent's policy outputs a "terminate" action with probability 1.
+In the context of Vibe Coding, convergence is defined as the agent reaching an **absorbing state** $S^\ast$ where the task is complete. Mathematically, an absorbing state is one where the transition probability to any other state is zero: $P(S^\ast \mid S^\ast, A) = 1$, and the agent's policy outputs a "terminate" action with probability 1.
 
 Practically, convergence means the code meets a predefined termination criteria:
 
@@ -109,7 +109,7 @@ Practically, convergence means the code meets a predefined termination criteria:
 
 It is crucial to note that for any set of functional requirements, there are theoretically infinitely many valid code implementations $C_{valid} \subset C$ that satisfy the automated test suite. A naive MDP process might converge to any random absorbing state within $C_{valid}$. However, a well-steered MDP process aims to converge the end state strictly into a much smaller, optimal subset $C_{optimal} \subset C_{valid}$. This subset represents implementations that yield a high Value function from a software engineering perspective—characterized by low structural entropy, high maintainability, and scalability.
 
-The efficiency of vibe coding is measured by the **expected hitting time** $\mathbb{E}[T_{S^*}]$, which is the expected number of iterations (tool calls and generations) required to reach the absorbing state $S^*$. A lower hitting time implies a faster and more efficient agent loop.
+The efficiency of vibe coding is measured by the **expected hitting time** $\mathbb{E}[T_{S^\ast}]$, which is the expected number of iterations (tool calls and generations) required to reach the absorbing state $S^\ast$. A lower hitting time implies a faster and more efficient agent loop.
 
 # HITL (Human-in-the-Loop)
 
@@ -121,15 +121,15 @@ The human developer acts as an external **Oracle** and a **Control Mechanism**, 
 2. **Escapes Local Minima**: Forces a state transition away from the suboptimal absorbing state, $P(S_{new} \mid S_{local}, A_{human}) = 1$, pushing the agent back into exploration.
 3. **Acts as a Surrogate Reward**: Since the agent cannot be trained via RL on a complex reward function on the fly, the human provides heuristic "pseudo-rewards" directly in natural language. These constraints for Code Quality, Security, and Scalability act as new deterministic rules in the context window.
 
-Through human steering, the search space is pruned, drastically reducing the expected hitting time $\mathbb{E}[T_{S^*}]$ and ensuring the final state is a global optimum rather than a local one.
+Through human steering, the search space is pruned, drastically reducing the expected hitting time $\mathbb{E}[T_{S^\ast}]$ and ensuring the final state is a global optimum rather than a local one.
 
 # Senior Software Engineer
 
 A highly experienced senior software engineer is critical to successful vibe coding because they possess a highly refined, internal prior distribution $P_{senior}(C)$ over optimal software architectures.
 
-In reinforcement learning terms, a senior engineer possesses an accurate **Value Function** $V^*(S_t)$. They can look at an intermediate state (a drafted pull request) and accurately estimate the long-term cost of that code. Because the agent itself cannot learn a value function for the specific codebase on the fly (its weights are frozen), the senior engineer lends their internal value function to the agent. When they steer the agent, their injected prompts act as heuristic guidance, substituting for the dense reward signals that a formal RL agent would otherwise require during training.
+In reinforcement learning terms, a senior engineer possesses an accurate **Value Function** $V^\ast(S_t)$. They can look at an intermediate state (a drafted pull request) and accurately estimate the long-term cost of that code. Because the agent itself cannot learn a value function for the specific codebase on the fly (its weights are frozen), the senior engineer lends their internal value function to the agent. When they steer the agent, their injected prompts act as heuristic guidance, substituting for the dense reward signals that a formal RL agent would otherwise require during training.
 
-Because they can accurately foresee architectural dead-ends, they can prune massive branches of the agent's search tree early. This accelerates the convergence (minimizing $\mathbb{E}[T_{S^*}]$) and guarantees that the absorbing state $S^*$ represents high code quality, adhering to strict non-functional requirements.
+Because they can accurately foresee architectural dead-ends, they can prune massive branches of the agent's search tree early. This accelerates the convergence (minimizing $\mathbb{E}[T_{S^\ast}]$) and guarantees that the absorbing state $S^\ast$ represents high code quality, adhering to strict non-functional requirements.
 
 # Junior Software Engineer
 
