@@ -128,22 +128,40 @@ The human developer acts as an external **Oracle** and a **Control Mechanism**, 
 
 1. **Shifts the Prior**: Injects strong structural priors into the context window, radically altering $P(C \mid S_t)$.
 2. **Escapes Local Minima**: Forces a state transition away from the suboptimal absorbing state, $P(S_{new} \mid S_{local}, A_{human}) = 1$, pushing the agent back into exploration.
-3. **Acts as a Surrogate Reward**: Since the agent cannot be trained via RL on a complex reward function on the fly, the human provides heuristic "pseudo-rewards" directly in natural language. These constraints for Code Quality, Security, and Scalability act as new deterministic rules in the context window.
+3. **Acts as a Surrogate Reward**: Since the agent cannot be trained via RL on a complex reward function on the fly, the human provides heuristic "pseudo-rewards" directly in natural language. These constraints for Code Quality, Security, Maintainability and Scalability act as new deterministic rules in the context window.
 
 Through human steering, the search space is pruned, drastically reducing the expected hitting time $\mathbb{E}[T_{S^\ast}]$ and ensuring the final state is a global optimum rather than a local one.
 
 # Experienced Software Engineer
 
-A highly experienced software engineer is critical to successful vibe coding because they possess a highly refined, internal prior distribution $P_{senior}(C)$ over optimal software architectures.
+An experienced software engineer possesses a highly refined internal prior distribution $P_{experienced}(\mathcal{C})$ over optimal software architectures. Because they deeply understand the long-term implications of design choices, they act as an accurate **Value Function** estimator for the intermediate state of the codebase:
 
-In reinforcement learning terms, a senior engineer possesses an accurate **Value Function** $V^\ast(S_t)$. They can look at an intermediate state (a drafted pull request) and accurately estimate the long-term cost of that code. Because the agent itself cannot learn a value function for the specific codebase on the fly (its weights are frozen), the senior engineer lends their internal value function to the agent. When they steer the agent, their injected prompts act as heuristic guidance, substituting for the dense reward signals that a formal RL agent would otherwise require during training.
+$$ V_{experienced}(S_t) \approx V^\ast(S_t) $$
 
-Because they can accurately foresee architectural dead-ends, they can prune massive branches of the agent's search tree early. This accelerates the convergence (minimizing $\mathbb{E}[T_{S^\ast}]$) and guarantees that the absorbing state $S^\ast$ represents high code quality, adhering to strict non-functional requirements.
+By injecting strategic prompts $A_{experienced}$, they provide heuristic guidance that substitutes for the dense reward signals an RL agent would normally require during training. This intervention effectively collapses the uncertainty, drastically reducing the entropy of the remaining solution space:
 
-# Starters
+$$ H(\mathcal{C} \mid S_t, A_{experienced}) \ll H(\mathcal{C} \mid S_t) $$
 
-Conversely, new software engineers are in a disadvantaged position for vibe coding. The knowledge required to effectively steer a Coding Agent takes years of empirical training to acquire.
+Through this precise Bayesian updating, the senior engineer prunes massive branches of the search tree early on. This accelerates the loop, reducing the expected hitting time compared to an unguided, autonomous agent:
 
-A rookie developer possesses an uncalibrated prior $P_{rookie}(C)$ and a value function $V_{rookie}(S_t)$ with high variance. They may not recognize when the agent is heading towards an architectural local minimum. Consequently, they might accept a suboptimal absorbing state $S_{local}$ simply because the tests pass.
+$$ \mathbb{E}[T_{S^\ast} \mid A_{experienced}] \ll \mathbb{E}[T_{S^\ast} \mid \text{autonomous}] $$
 
-Furthermore, when a rookie attempts to steer the agent, their prompts ($A_{human}$) may introduce noise rather than reducing entropy. Unlike machines, human intuition cannot be fine-tuned via backpropagation overnight. Without the seasoned intuition to provide precise Bayesian updates to the agent's context, the rookie-agent loop may diverge, resulting in endless iterations of broken code.
+More importantly, their guidance forces the MDP transition dynamics to avoid suboptimal absorbing states, guaranteeing with high probability that the final implementation belongs to the highly maintainable, optimal subset:
+
+$$ P(S^\ast \in \mathcal{C}_{optimal} \mid A_{experienced}) \to 1 $$
+
+# Starters or Layman
+
+Conversely, a starter or layman possesses an uncalibrated prior $P_{starter}(\mathcal{C})$ and a value function with extremely high variance, meaning they cannot reliably estimate the long-term cost of a drafted pull request:
+
+$$ \text{Var}(V_{starter}(S_t)) \gg 0 $$
+
+When a starter attempts to steer the agent, their prompts $A_{starter}$ often fail to provide the precise Bayesian updates needed. Instead of collapsing the probability mass around the correct solution, they may introduce noise, leaving the entropy of the solution space largely unchanged:
+
+$$ H(\mathcal{C} \mid S_t, A_{starter}) \approx H(\mathcal{C} \mid S_t) $$
+
+Without an accurate internal value function to foresee architectural dead-ends, the starter may accept an implementation simply because it satisfies the immediate functional requirements (e.g., automated unit tests pass). Consequently, the agent is prone to converging on a suboptimal local minimum $S_{local}$:
+
+$$ P(S^\ast \in \mathcal{C}_{valid} \setminus \mathcal{C}_{optimal} \mid A_{starter}) \to 1 $$
+
+Because the search space is not effectively pruned by human steering, this unguided traversal increases the expected hitting time and often leads to the loop diverging into endless iterations of broken or unmaintainable code.
