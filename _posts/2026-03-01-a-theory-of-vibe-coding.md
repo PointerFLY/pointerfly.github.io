@@ -13,14 +13,15 @@ It is important to emphasize that this is merely one perspective. The true natur
 
 # LLM: Probabilistic Models
 
-To establish this framework, we must first accept a core premise: we are treating the Large Language Model strictly as a probabilistic model. Just as early theoretical work on Convolutional Neural Networks (CNNs) sought to understand deep learning through Empirical Risk Minimization (ERM) rather than biological mimicry, we must strip away anthropomorphic analogies. When an agent writes code, it is fundamentally minimizing a loss function over a distribution of tokens, not "thinking" in the human sense.
+To establish this framework, we must first accept a core premise: we are treating the Large Language Model strictly as a probabilistic model. Just as the broader field of machine learning matured by shifting its focus from biological mimicry to rigorous statistical frameworks like Empirical and Structural Risk Minimization, we must strip away anthropomorphic analogies from LLMs. When an agent writes code, it is fundamentally minimizing a loss function over a distribution of tokens, not "thinking" in the human sense.
 
 Formally, an LLM learns a parameterized probability distribution $P_\theta(X)$ to approximate the true data distribution $P_{data}(X)$ over sequences of tokens $X$. During training, this is typically achieved via Maximum Likelihood Estimation (MLE), minimizing the cross-entropy loss:
 
 $$ \mathcal{L}(\theta) = -\mathbb{E}_{X \sim P_{data}}[\log P_\theta(X)] $$
 
-This view is supported by recent research, such as studies highlighting the *[Illusion of Thinking](https://machinelearning.apple.com/research/illusion-of-thinking)* in LLMs. Models often fail catastrophically when superficial details of a logic puzzle are altered, suggesting that what appears to be formal reasoning is actually sophisticated, probabilistic pattern matching.  
-By acknowledging this illusion, we can stop asking "why didn't the AI understand my prompt?", start asking "how do I shift the probability distribution $P_\theta(Y|X)$ to favor the correct output $Y$?"
+This view is supported by recent research, such as studies highlighting the *[Illusion of Thinking](https://machinelearning.apple.com/research/illusion-of-thinking)* in LLMs. Models often fail catastrophically when superficial details of a logic puzzle are altered, suggesting that what appears to be formal reasoning is actually sophisticated, probabilistic pattern matching.
+
+By acknowledging this illusion, we can stop asking "why didn't the AI understand my prompt?", start asking "how do I shift the probability distribution $P_\theta(Y \mid X)$ to favor the correct output $Y$?"
 
 # The Basic: Autoregressive Token Generation
 
@@ -36,9 +37,9 @@ In the early ChatGPT era, interactions were purely conversational without tool u
 
 Given the finite length of the input token stream due to the context window limit, we can simplify the generation into a conditional probability distribution over sequences. Let $S_t$ represent the entire context state at turn $t$ (including all previous conversation history). The transition to the next state $S_{t+1}$ (which includes the user's new prompt and the model's response) is given by:
 
-$$ P(S_{t+1} \mid S_t), \; S_{t+1} \in \mathcal{L} $$
+$$ P(S_{t+1} \mid S_t), \; S_{t+1} \in L $$
 
-where $\mathcal{L}$ is the space of all valid token sequences within the context window. The model generates the response $Y_t$ autoregressively:
+where $L$ is the space of all valid token sequences within the context window. The model generates the response $Y_t$ autoregressively:
 
 $$ P(Y_t \mid S_t) = \prod_{i=1}^{|Y_t|} P_\theta(y_{t,i} \mid S_t, y_{t,<i}) $$
 
@@ -50,11 +51,19 @@ Agents complicate the base process by extending the capabilities of the LLM thro
 
 $$ y = T(x) $$
 
-When an LLM decides to emit a special token sequence denoting a tool call action $A_t$, the autoregressive generation pauses. The environment executes $T(A_t)$ and returns an observation $O_t$. This observation is appended back to the context window:
+When an LLM decides to emit a special token sequence denoting a tool call action $A_t$, the autoregressive generation pauses. The environment executes $T(A_t)$ and returns an observation $O_t$. 
+
+In early agent frameworks, updating the state was a naive sequence concatenation (where $\oplus$ represents appending tokens):
 
 $$ S_{t+1} = S_t \oplus A_t \oplus O_t $$
 
 This fundamental shift alters the loop of the LLM. It is no longer a closed-system generative model relying solely on $P_\theta$; it is now an open system where external computational entropy and deterministic facts are injected into the context window, dynamically shifting the conditional probabilities for subsequent generation.
+
+It's worthy to note that modern coding agents may have complex context management techniques, the state transition is managed by a **Context Management Function** $M$:
+
+$$ S_{t+1} = M(S_t, A_t, O_t) $$
+
+By intelligently managing the state representation, $M$ prevents context overflow and maximizes the signal-to-noise ratio of the information fed back into the LLM's probability distribution $P_\theta$ for the next generation step.
 
 # Agent Loop: Markov Decision Process
 
