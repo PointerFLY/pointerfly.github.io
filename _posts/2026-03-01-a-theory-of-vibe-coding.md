@@ -13,20 +13,21 @@ It is important to emphasize that this is merely one perspective. The true natur
 
 # LLM: Probabilistic Models
 
-To establish this framework, we must first accept a core premise: we are treating the Large Language Model strictly as a probabilistic model. Just as early theoretical work on Convolutional Neural Networks (CNNs) sought to understand deep learning through Empirical Risk Minimization (ERM) rather than biological mimicry, we must strip away anthropomorphic analogies. When an agent writes code, it is fundamentally minimizing a loss function over a distribution of tokens, not "thinking" in the human sense.
+To establish this framework, we must first accept a core premise: we are treating the Large Language Model strictly as a probabilistic model. Just as the broader field of machine learning matured by shifting its focus from biological mimicry to rigorous statistical frameworks like Empirical and Structural Risk Minimization, we must strip away anthropomorphic analogies from LLMs. When an agent writes code, it is fundamentally minimizing a loss function over a distribution of tokens, not "thinking" in the human sense.
 
 Formally, an LLM learns a parameterized probability distribution $P_\theta(X)$ to approximate the true data distribution $P_{data}(X)$ over sequences of tokens $X$. During training, this is typically achieved via Maximum Likelihood Estimation (MLE), minimizing the cross-entropy loss:
 
 $$ \mathcal{L}(\theta) = -\mathbb{E}_{X \sim P_{data}}[\log P_\theta(X)] $$
 
-This view is supported by recent research, such as studies highlighting the *[Illusion of Thinking](https://machinelearning.apple.com/research/illusion-of-thinking)* in LLMs. Models often fail catastrophically when superficial details of a logic puzzle are altered, suggesting that what appears to be formal reasoning is actually sophisticated, probabilistic pattern matching.  
-By acknowledging this illusion, we can stop asking "why didn't the AI understand my prompt?", start asking "how do I shift the probability distribution $P_\theta(Y|X)$ to favor the correct output $Y$?"
+This view is supported by recent research, such as studies highlighting the *[Illusion of Thinking](https://machinelearning.apple.com/research/illusion-of-thinking)* in LLMs. Models often fail catastrophically when superficial details of a logic puzzle are altered, suggesting that what appears to be formal reasoning is actually sophisticated, probabilistic pattern matching.
+
+By acknowledging this illusion, we can stop asking "why didn't the AI understand my prompt?", start asking "how do I shift the probability distribution $P_\theta(Y \mid X)$ to favor the correct output $Y$?"
 
 # The Basic: Autoregressive Token Generation
 
-At the foundational level, an LLM defines a conditional probability distribution over a vocabulary $V$. The generation of the output text is an autoregressive stochastic process, sampling from the following distribution iteratively until an End-of-Sequence (EOS) token is reached:
+At the foundational level, an LLM defines a conditional probability distribution over a vocabulary $\mathcal{V}$. The generation of the output text is an autoregressive stochastic process, sampling from the following distribution iteratively until an End-of-Sequence (EOS) token is reached:
 
-$$ P(w_{n+1} \mid w_1, \dots, w_n), \; w_{n+1} \in V $$
+$$ P(w_{n+1} \mid w_1, \dots, w_n), \; w_{n+1} \in \mathcal{V} $$
 
 Each generated token $w_{n+1}$ depends on the entire preceding sequence, making it a highly complex, non-Markovian process at the token level (though bounded by the context window).
 
@@ -36,9 +37,9 @@ In the early ChatGPT era, interactions were purely conversational without tool u
 
 Given the finite length of the input token stream due to the context window limit, we can simplify the generation into a conditional probability distribution over sequences. Let $S_t$ represent the entire context state at turn $t$ (including all previous conversation history). The transition to the next state $S_{t+1}$ (which includes the user's new prompt and the model's response) is given by:
 
-$$ P(S_{t+1} \mid S_t), \; S_{t+1} \in \mathcal{L} $$
+$$ P(S_{t+1} \mid S_t), \; S_{t+1} \in \mathcal{S} $$
 
-where $\mathcal{L}$ is the space of all valid token sequences within the context window. The model generates the response $Y_t$ autoregressively:
+where $\mathcal{S}$ is the space of all valid token sequences within the context window. The model generates the response $Y_t$ autoregressively:
 
 $$ P(Y_t \mid S_t) = \prod_{i=1}^{|Y_t|} P_\theta(y_{t,i} \mid S_t, y_{t,<i}) $$
 
@@ -50,11 +51,19 @@ Agents complicate the base process by extending the capabilities of the LLM thro
 
 $$ y = T(x) $$
 
-When an LLM decides to emit a special token sequence denoting a tool call action $A_t$, the autoregressive generation pauses. The environment executes $T(A_t)$ and returns an observation $O_t$. This observation is appended back to the context window:
+When an LLM decides to emit a special token sequence denoting a tool call action $A_t$, the autoregressive generation pauses. The environment executes $T(A_t)$ and returns an observation $O_t$. 
+
+In early agent frameworks, updating the state was a naive sequence concatenation (where $\oplus$ represents appending tokens):
 
 $$ S_{t+1} = S_t \oplus A_t \oplus O_t $$
 
 This fundamental shift alters the loop of the LLM. It is no longer a closed-system generative model relying solely on $P_\theta$; it is now an open system where external computational entropy and deterministic facts are injected into the context window, dynamically shifting the conditional probabilities for subsequent generation.
+
+It's worthy to note that modern coding agents may have complex context management techniques, the state transition is managed by a **Context Management Function** $M$:
+
+$$ S_{t+1} = M(S_t, A_t, O_t) $$
+
+By intelligently managing the state representation, $M$ prevents context overflow and maximizes the signal-to-noise ratio of the information fed back into the LLM's probability distribution $P_\theta$ for the next generation step.
 
 # Agent Loop: Markov Decision Process
 
@@ -86,17 +95,17 @@ It is vital to clarify that in standard Vibe Coding, the LLM's weights $\theta$ 
 
 Every iteration where the agent writes code, executes it, and receives an error message can be viewed as a Bayesian update.
 
-Let $C$ be the space of all possible code implementations. Initially, the LLM has a prior distribution $P(C \mid S_0)$ based solely on the prompt and its pre-training.
+Let $\mathcal{C}$ be the space of all possible code implementations. Initially, the LLM has a prior distribution $P(\mathcal{C} \mid S_0)$ based solely on the prompt and its pre-training.
 
-When the agent executes the code action $A_t$, it receives an observation $O_t$ (e.g., a stack trace or a failed unit test). The likelihood of observing this specific output given a code implementation is $P(O_t \mid C)$.
+When the agent executes the code action $A_t$, it receives an observation $O_t$ (e.g., a stack trace or a failed unit test). The likelihood of observing this specific output given a code implementation is $P(O_t \mid \mathcal{C})$.
 
 The agent updates its belief over the correct code using Bayes' Theorem:
 
-$$ P(C \mid S_t, O_t) \propto P(O_t \mid C) P(C \mid S_t) $$
+$$ P(\mathcal{C} \mid S_t, O_t) \propto P(O_t \mid \mathcal{C}) P(\mathcal{C} \mid S_t) $$
 
-- **Prior**: The agent's current distribution over the correct implementation, $P(C \mid S_t)$.
+- **Prior**: The agent's current distribution over the correct implementation, $P(\mathcal{C} \mid S_t)$.
 - **Observation**: The execution output $O_t$.
-- **Posterior**: The updated distribution over possible correct codes, $P(C \mid S_{t+1})$. By feeding the observation back into the context window, the agent conditions its next sample on the fact that its previous hypothesis was incorrect. The observation $O_t$ acts as evidence, collapsing the probability mass around hypotheses that are consistent with resolving the error. This iteratively reduces the entropy $H(C)$ of the solution space.
+- **Posterior**: The updated distribution over possible correct codes, $P(\mathcal{C} \mid S_{t+1})$. By feeding the observation back into the context window, the agent conditions its next sample on the fact that its previous hypothesis was incorrect. The observation $O_t$ acts as evidence, collapsing the probability mass around hypotheses that are consistent with resolving the error. This iteratively reduces the entropy $H(\mathcal{C})$ of the solution space.
 
 # Convergence
 
@@ -107,7 +116,7 @@ Practically, convergence means the code meets a predefined termination criteria:
 1. **Functional Completeness**: All unit, integration, and e2e tests pass (the environment returns a success signal).
 2. **Human Approval**: The code passes visual and architectural inspection by a human developer.
 
-It is crucial to note that for any set of functional requirements, there are theoretically infinitely many valid code implementations $C_{valid} \subset C$ that satisfy the automated test suite. A naive MDP process might converge to any random absorbing state within $C_{valid}$. However, a well-steered MDP process aims to converge the end state strictly into a much smaller, optimal subset $C_{optimal} \subset C_{valid}$. This subset represents implementations that yield a high Value function from a software engineering perspective—characterized by low structural entropy, high maintainability, and scalability.
+It is crucial to note that for any set of functional requirements, there are theoretically infinitely many valid code implementations $\mathcal{C}_{valid} \subset \mathcal{C}$ that satisfy the automated test suite. A naive MDP process might converge to any random absorbing state within $\mathcal{C}_{valid}$. However, a well-steered MDP process aims to converge the end state strictly into a much smaller, optimal subset $\mathcal{C}_{optimal} \subset \mathcal{C}_{valid}$. This subset represents implementations that yield a high Value function from a software engineering perspective—characterized by low structural entropy, high maintainability, and scalability.
 
 The efficiency of vibe coding is measured by the **expected hitting time** $\mathbb{E}[T_{S^\ast}]$, which is the expected number of iterations (tool calls and generations) required to reach the absorbing state $S^\ast$. A lower hitting time implies a faster and more efficient agent loop.
 
