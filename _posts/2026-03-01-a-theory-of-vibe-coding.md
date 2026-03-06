@@ -116,7 +116,7 @@ Practically, convergence means the code meets a predefined termination criteria:
 1. **Functional Completeness**: All unit, integration, and e2e tests pass (the environment returns a success signal).
 2. **Human Approval**: The code passes visual and architectural inspection by a human developer.
 
-It is crucial to note that for any set of functional requirements, there are theoretically infinitely many valid code implementations $\mathcal{C}_{valid} \subset \mathcal{C}$ that satisfy the automated test suite. A naive MDP process might converge to any random absorbing state within $\mathcal{C}_{valid}$. However, a well-steered MDP process aims to converge the end state strictly into a much smaller, optimal subset $\mathcal{C}_{optimal} \subset \mathcal{C}_{valid}$. This subset represents implementations that yield a high Value function from a software engineering perspective—characterized by low structural entropy, high maintainability, and scalability.
+It is crucial to note that for any set of functional requirements, there are theoretically infinitely many valid code implementations $\mathcal{C}\_{valid} \subset \mathcal{C}$ that satisfy the automated test suite. A naive MDP process might converge to any random absorbing state within $\mathcal{C}\_{valid}$. However, a well-steered MDP process aims to converge the end state strictly into a much smaller, optimal subset $\mathcal{C}\_{optimal} \subset \mathcal{C}\_{valid}$. This subset represents implementations that yield a high Value function from a software engineering perspective—characterized by low structural entropy, high maintainability, and scalability.
 
 The efficiency of vibe coding is measured by the **expected hitting time** $\mathbb{E}[T_{S^\ast}]$, which is the expected number of iterations (tool calls and generations) required to reach the absorbing state $S^\ast$. A lower hitting time implies a faster and more efficient agent loop.
 
@@ -132,15 +132,15 @@ The human developer acts as an external **Oracle** and a **Control Mechanism**, 
 
 Through human steering, the search space is pruned, drastically reducing the expected hitting time $\mathbb{E}[T_{S^\ast}]$ and ensuring the final state is a global optimum rather than a local one.
 
-# Senior Software Engineer
+# Experienced Software Engineer
 
-A highly experienced senior software engineer is critical to successful vibe coding because they possess a highly refined, internal prior distribution $P_{senior}(C)$ over optimal software architectures.
+A highly experienced software engineer is critical to successful vibe coding because they possess a highly refined, internal prior distribution $P_{senior}(C)$ over optimal software architectures.
 
 In reinforcement learning terms, a senior engineer possesses an accurate **Value Function** $V^\ast(S_t)$. They can look at an intermediate state (a drafted pull request) and accurately estimate the long-term cost of that code. Because the agent itself cannot learn a value function for the specific codebase on the fly (its weights are frozen), the senior engineer lends their internal value function to the agent. When they steer the agent, their injected prompts act as heuristic guidance, substituting for the dense reward signals that a formal RL agent would otherwise require during training.
 
 Because they can accurately foresee architectural dead-ends, they can prune massive branches of the agent's search tree early. This accelerates the convergence (minimizing $\mathbb{E}[T_{S^\ast}]$) and guarantees that the absorbing state $S^\ast$ represents high code quality, adhering to strict non-functional requirements.
 
-# Junior Software Engineer
+# Starters
 
 Conversely, new software engineers are in a disadvantaged position for vibe coding. The knowledge required to effectively steer a Coding Agent takes years of empirical training to acquire.
 
